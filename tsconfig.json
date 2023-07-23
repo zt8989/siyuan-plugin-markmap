@@ -35,10 +35,10 @@
             "node",
             "vite/client"
         ],
-        "baseUrl": "./src",
+        // "baseUrl": "./src",
         "paths": {
-            "@/*": ["*"],
-            "@/libs/*": ["libs/*"],
+            "@/*": ["./src/*"],
+            "@/libs/*": ["./src/libs/*"],
         }
     },
     "include": [

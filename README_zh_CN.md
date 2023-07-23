@@ -4,7 +4,7 @@
 [English](./README.md)
 
 
-> 本例和 [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.1.3](https://github.com/siyuan-note/plugin-sample/tree/v0.1.3) 基本保持一致。
+> 本例和 [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.1.10](https://github.com/siyuan-note/plugin-sample/tree/v0.1.10)
 
 1. 使用 vite 打包
 2. 使用符号链接、而不是把项目放到插件目录下的模式进行开发
@@ -55,10 +55,11 @@
 国际化方面我们主要考虑的是支持多语言，具体需要完成以下工作：
 
 * 插件自身的元信息，比如插件描述和自述文件
-    * plugin.json 中的 `description` 和 `readme` 字段，以及对应的 README*.md 文件
+  * plugin.json 中的 `description` 和 `readme` 字段，以及对应的 README*.md 文件
 * 插件中使用的文本，比如按钮文字和提示信息
-    * src/i18n/*.json 语言配置文件
-    * 代码中使用 `this.i18.key` 获取文本
+  * src/i18n/*.json 语言配置文件
+  * 代码中使用 `this.i18.key` 获取文本
+* 最后在 plugin.json 中的 `i18n` 字段中声明该插件支持的语言
 
 建议插件至少支持英文和简体中文，这样可以方便更多人使用。
 

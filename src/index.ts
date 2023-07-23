@@ -8,7 +8,10 @@ import {
     adaptHotkey,
     getFrontend,
     getBackend,
-    IModel
+    IModel,
+    Setting,
+    fetchPost,
+    Protyle
 } from "siyuan";
 import "@/index.scss";
 
@@ -20,9 +23,10 @@ export default class PluginSample extends Plugin {
 
     private customTab: () => IModel;
     private isMobile: boolean;
+    private blockIconEventBindThis = this.blockIconEvent.bind(this);
 
     async onload() {
-        this.data[STORAGE_NAME] = {readonlyText: "Readonly"};
+        this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
 
         console.log("loading plugin-sample", this.i18n);
 
@@ -41,12 +45,19 @@ export default class PluginSample extends Plugin {
             title: this.i18n.addTopBarIcon,
             position: "right",
             callback: () => {
-                let rect = topBarElement.getBoundingClientRect();
-                // 如果被隐藏，则使用更多按钮
-                if (rect.width === 0) {
-                    rect = document.querySelector("#barMore").getBoundingClientRect();
+                if (this.isMobile) {
+                    this.addMenu();
+                } else {
+                    let rect = topBarElement.getBoundingClientRect();
+                    // 如果被隐藏，则使用更多按钮
+                    if (rect.width === 0) {
+                        rect = document.querySelector("#barMore").getBoundingClientRect();
+                    }
+                    if (rect.width === 0) {
+                        rect = document.querySelector("#barPlugins").getBoundingClientRect();
+                    }
+                    this.addMenu(rect);
                 }
-                this.addMenu(rect);
             }
         });
 
@@ -59,7 +70,7 @@ export default class PluginSample extends Plugin {
         statusIconTemp.content.firstElementChild.addEventListener("click", () => {
             confirm("⚠️", this.i18n.confirmRemove.replace("${name}", this.name), () => {
                 this.removeData(STORAGE_NAME).then(() => {
-                    this.data[STORAGE_NAME] = {readonlyText: "Readonly"};
+                    this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
                     showMessage(`[${this.name}]: ${this.i18n.removedData}`);
                 });
             });
@@ -86,7 +97,7 @@ export default class PluginSample extends Plugin {
         this.addDock({
             config: {
                 position: "LeftBottom",
-                size: {width: 200, height: 0},
+                size: { width: 200, height: 0 },
                 icon: "iconSaving",
                 title: "Custom Dock",
             },
@@ -114,6 +125,42 @@ export default class PluginSample extends Plugin {
             }
         });
 
+        const textareaElement = document.createElement("textarea");
+        this.setting = new Setting({
+            confirmCallback: () => {
+                this.saveData(STORAGE_NAME, { readonlyText: textareaElement.value });
+            }
+        });
+        this.setting.addItem({
+            title: "Readonly text",
+            createActionElement: () => {
+                textareaElement.className = "b3-text-field fn__block";
+                textareaElement.placeholder = "Readonly text in the menu";
+                textareaElement.value = this.data[STORAGE_NAME].readonlyText;
+                return textareaElement;
+            },
+        });
+        const btnaElement = document.createElement("button");
+        btnaElement.className = "b3-button b3-button--outline fn__flex-center fn__size200";
+        btnaElement.textContent = "Open";
+        btnaElement.addEventListener("click", () => {
+            window.open("https://github.com/siyuan-note/plugin-sample-vite-svelte");
+        });
+        this.setting.addItem({
+            title: "Open plugin url",
+            description: "Open plugin url in browser",
+            actionElement: btnaElement,
+        });
+
+        this.protyleSlash = [{
+            filter: ["insert emoji 😊", "插入表情 😊", "crbqwx"],
+            html: `<div class="b3-list-item__first"><span class="b3-list-item__text">${this.i18n.insertEmoji}</span><span class="b3-list-item__meta">😊</span></div>`,
+            id: "insertEmoji",
+            callback(protyle: Protyle) {
+                protyle.insert("😊");
+            }
+        }];
+
         console.log(this.i18n.helloPlugin);
     }
 
@@ -128,15 +175,11 @@ export default class PluginSample extends Plugin {
         console.log("onunload");
     }
 
-    openSetting(): void {
-        
-    }
-
-    private eventBusLog({detail}: any) {
+    private eventBusLog({ detail }: any) {
         console.log(detail);
     }
 
-    private blockIconEvent({detail}: any) {
+    private blockIconEvent({ detail }: any) {
         const ids: string[] = [];
         detail.blockElements.forEach((item: HTMLElement) => {
             ids.push(item.getAttribute("data-node-id"));
@@ -149,33 +192,40 @@ export default class PluginSample extends Plugin {
     }
 
     private showDialog() {
-        let dialog = new Dialog({
-            title: "Hello World",
-            content: `<div id="helloPanel" class="b3-dialog__content"></div>`,
-            width: this.isMobile ? "92vw" : "720px",
-            destroyCallback(options) {
-                //Destroy the component when the dialog is closed
-                // hello.$destroy();
-            },
+        const dialog = new Dialog({
+            title: "Info",
+            content: `<div class="b3-dialog__content">
+    <div>API demo:</div>
+    <div class="fn__hr"></div>
+    <div class="plugin-sample__time">System current time: <span id="time"></span></div>
+    <div class="fn__hr"></div>
+    <div class="fn__hr"></div>
+    <div>Protyle demo:</div>
+    <div class="fn__hr"></div>
+    <div id="protyle" style="height: 360px;"></div>
+</div>`,
+            width: this.isMobile ? "92vw" : "560px",
+            height: "540px",
         });
-        let hello = new HelloExample({
-            target: dialog.element.querySelector("#helloPanel"),
-            props: {
-                name: this.i18n.name,
-                i18n: this.i18n.hello
-            }
+        new Protyle(this.app, dialog.element.querySelector("#protyle"), {
+            blockId: "20200812220555-lj3enxa",
+        });
+        fetchPost("/api/system/currentTime", {}, (response) => {
+            dialog.element.querySelector("#time").innerHTML = new Date(response.data).toString();
         });
     }
 
-    private addMenu(rect: DOMRect) {
+    private addMenu(rect?: DOMRect) {
         const menu = new Menu("topBarSample", () => {
             console.log(this.i18n.byeMenu);
         });
         menu.addItem({
             icon: "iconInfo",
-            label: "Dialog",
+            label: "Dialog(open help first)",
             accelerator: this.commands[0].customHotkey,
-            click: () => this.showDialog()
+            click: () => {
+                this.showDialog();
+            }
         });
         if (!this.isMobile) {
             menu.addItem({
@@ -193,7 +243,7 @@ export default class PluginSample extends Plugin {
                             fn: this.customTab
                         },
                     });
-                    console.log(tab)
+                    console.log(tab);
                 }
             });
             menu.addItem({
@@ -206,7 +256,7 @@ export default class PluginSample extends Plugin {
                             path: "assets/paragraph-20210512165953-ag1nib4.svg"
                         }
                     });
-                    console.log(tab)
+                    console.log(tab);
                 }
             });
             menu.addItem({
@@ -219,7 +269,7 @@ export default class PluginSample extends Plugin {
                             id: "20200812220555-lj3enxa",
                         }
                     });
-                    console.log(tab)
+                    console.log(tab);
                 }
             });
             menu.addItem({
@@ -232,7 +282,7 @@ export default class PluginSample extends Plugin {
                             k: "SiYuan"
                         }
                     });
-                    console.log(tab)
+                    console.log(tab);
                 }
             });
             menu.addItem({
@@ -245,7 +295,7 @@ export default class PluginSample extends Plugin {
                             type: "all"
                         }
                     });
-                    console.log(tab)
+                    console.log(tab);
                 }
             });
             menu.addItem({
@@ -281,13 +331,13 @@ export default class PluginSample extends Plugin {
                 icon: "iconSelect",
                 label: "On click-blockicon",
                 click: () => {
-                    this.eventBus.on("click-blockicon", this.blockIconEvent);
+                    this.eventBus.on("click-blockicon", this.blockIconEventBindThis);
                 }
             }, {
                 icon: "iconClose",
                 label: "Off click-blockicon",
                 click: () => {
-                    this.eventBus.off("click-blockicon", this.blockIconEvent);
+                    this.eventBus.off("click-blockicon", this.blockIconEventBindThis);
                 }
             }, {
                 icon: "iconSelect",
@@ -337,9 +387,124 @@ export default class PluginSample extends Plugin {
                 click: () => {
                     this.eventBus.off("open-noneditableblock", this.eventBusLog);
                 }
+            }, {
+                icon: "iconSelect",
+                label: "On loaded-protyle",
+                click: () => {
+                    this.eventBus.on("loaded-protyle", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off loaded-protyle",
+                click: () => {
+                    this.eventBus.off("loaded-protyle", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-blockref",
+                click: () => {
+                    this.eventBus.on("open-menu-blockref", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-blockref",
+                click: () => {
+                    this.eventBus.off("open-menu-blockref", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-fileannotationref",
+                click: () => {
+                    this.eventBus.on("open-menu-fileannotationref", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-fileannotationref",
+                click: () => {
+                    this.eventBus.off("open-menu-fileannotationref", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-tag",
+                click: () => {
+                    this.eventBus.on("open-menu-tag", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-tag",
+                click: () => {
+                    this.eventBus.off("open-menu-tag", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-link",
+                click: () => {
+                    this.eventBus.on("open-menu-link", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-link",
+                click: () => {
+                    this.eventBus.off("open-menu-link", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-image",
+                click: () => {
+                    this.eventBus.on("open-menu-image", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-image",
+                click: () => {
+                    this.eventBus.off("open-menu-image", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-av",
+                click: () => {
+                    this.eventBus.on("open-menu-av", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-av",
+                click: () => {
+                    this.eventBus.off("open-menu-av", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-content",
+                click: () => {
+                    this.eventBus.on("open-menu-content", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-content",
+                click: () => {
+                    this.eventBus.off("open-menu-content", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On open-menu-breadcrumbmore",
+                click: () => {
+                    this.eventBus.on("open-menu-breadcrumbmore", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off open-menu-breadcrumbmore",
+                click: () => {
+                    this.eventBus.off("open-menu-breadcrumbmore", this.eventBusLog);
+                }
             }]
         });
         menu.addSeparator();
+        menu.addItem({
+            icon: "iconSettings",
+            label: "Official Setting Dialog",
+            click: () => {
+                this.openSetting();
+            }
+        });
         menu.addItem({
             icon: "iconSparkles",
             label: this.data[STORAGE_NAME].readonlyText || "Readonly",
