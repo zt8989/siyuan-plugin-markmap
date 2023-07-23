@@ -175,10 +175,6 @@ export default class PluginSample extends Plugin {
         console.log("onunload");
     }
 
-    openSetting(): void {
-        
-    }
-
     private eventBusLog({ detail }: any) {
         console.log(detail);
     }
@@ -196,19 +192,26 @@ export default class PluginSample extends Plugin {
     }
 
     private showDialog() {
-        let dialog = new Dialog({
-            title: "Hello World",
-            content: `<div id="helloPanel" class="b3-dialog__content"></div>`,
-            width: this.isMobile ? "92vw" : "720px",
-            destroyCallback(options) {
-                // hello.$destroy();
-            },
+        const dialog = new Dialog({
+            title: "Info",
+            content: `<div class="b3-dialog__content">
+    <div>API demo:</div>
+    <div class="fn__hr"></div>
+    <div class="plugin-sample__time">System current time: <span id="time"></span></div>
+    <div class="fn__hr"></div>
+    <div class="fn__hr"></div>
+    <div>Protyle demo:</div>
+    <div class="fn__hr"></div>
+    <div id="protyle" style="height: 360px;"></div>
+</div>`,
+            width: this.isMobile ? "92vw" : "560px",
+            height: "540px",
         });
-        new HelloExample({
-            target: dialog.element.querySelector("#helloPanel"),
-            props: {
-                app: this.app,
-            }
+        new Protyle(this.app, dialog.element.querySelector("#protyle"), {
+            blockId: "20200812220555-lj3enxa",
+        });
+        fetchPost("/api/system/currentTime", {}, (response) => {
+            dialog.element.querySelector("#time").innerHTML = new Date(response.data).toString();
         });
     }
 
@@ -500,13 +503,6 @@ export default class PluginSample extends Plugin {
             label: "Official Setting Dialog",
             click: () => {
                 this.openSetting();
-            }
-        });
-        menu.addItem({
-            icon: "iconSettings",
-            label: "A custom setting dialog (by svelte)",
-            click: () => {
-                this.openDIYSetting();
             }
         });
         menu.addItem({
