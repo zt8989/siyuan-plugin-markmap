@@ -3,7 +3,7 @@
 
 [中文版](./README_zh_CN.md)
 
-> Consistent with [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.1.10](https://github.com/siyuan-note/plugin-sample/tree/v0.1.10)
+> Consistent with [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.1.12](https://github.com/siyuan-note/plugin-sample/tree/v0.1.12)
 
 
 
@@ -46,9 +46,10 @@
 
       Done! Created symlink H:/SiYuanDevSpace/data/plugins/plugin-sample-vite-svelte
       ```
-
-5. Execute pnpm run dev for real-time compilation
-6. Open SiYuan marketplace and enable plugin in downloaded tab
+5. **Create development symbolic links by using environment variable**
+    - You can set environment variable `SIYUAN_PLUGIN_DIR` as `/data/plugins`
+6. Execute pnpm run dev for real-time compilation
+7. Open SiYuan marketplace and enable plugin in downloaded tab
 
 >  Notice: as the `make-link` script rely on the `fetch` function, please **ensure that at least version v18 of nodejs is installed** if you want to use make-link script.
 

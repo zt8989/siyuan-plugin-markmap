@@ -4,7 +4,7 @@
 [English](./README.md)
 
 
-> 本例和 [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.1.10](https://github.com/siyuan-note/plugin-sample/tree/v0.1.10)
+> 本例和 [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.1.12](https://github.com/siyuan-note/plugin-sample/tree/v0.1.12)
 
 1. 使用 vite 打包
 2. 使用符号链接、而不是把项目放到插件目录下的模式进行开发
@@ -43,8 +43,10 @@
 
       Done! Created symlink H:/SiYuanDevSpace/data/plugins/plugin-sample-vite-svelte
       ```
-5. 执行 `pnpm run dev` 进行实时编译
-6. 在思源中打开集市并在下载选项卡中启用插件
+5. **设置环境变量创建符号链接**
+    - 你也可以设置系统的环境变量 `SIYUAN_PLUGIN_DIR` 为 `/data/plugins` 的路径
+6. 执行 `pnpm run dev` 进行实时编译
+7. 在思源中打开集市并在下载选项卡中启用插件
 
 
 > 注意由于使用的 make-link 脚本依赖于 `fetch`，所以如果想要使用 make-link **请保证至少安装 v18 版本的 nodejs**

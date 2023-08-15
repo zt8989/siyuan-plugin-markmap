@@ -1,3 +1,17 @@
+## 0.2.0
+
+* [Add plugin event bus `open-siyuan-url-plugin` and `open-siyuan-url-block`](https://github.com/siyuan-note/siyuan/pull/8927)
+
+
+## 0.1.12 2023-08-01
+
+* Upgrade siyuan to 0.7.9
+
+## 0.1.11
+
+* [Add `input-search` event bus to plugins](https://github.com/siyuan-note/siyuan/issues/8725)
+
+
 ## 0.1.10
 
 * [Add `bind this` example for eventBus in plugins](https://github.com/siyuan-note/siyuan/issues/8668)
