@@ -15,11 +15,8 @@ import {
 } from "siyuan";
 import "@/index.scss";
 
-import HelloExample from "@/hello.svelte";
-import SettingPannel from "@/libs/setting-panel.svelte";
 
 import { SettingUtils } from "./libs/setting-utils";
-
 const STORAGE_NAME = "menu-config";
 const TAB_TYPE = "custom_tab";
 const DOCK_TYPE = "dock_tab";
@@ -85,24 +82,10 @@ export default class PluginSample extends Plugin {
             element: statusIconTemp.content.firstElementChild as HTMLElement,
         });
 
-        let tabDiv = document.createElement("div");
-        new HelloExample({
-            target: tabDiv,
-            props: {
-                app: this.app,
-            }
-        });
         this.customTab = this.addTab({
             type: TAB_TYPE,
             init() {
-                this.element.appendChild(tabDiv);
-                console.log(this.element);
-            },
-            beforeDestroy() {
-                console.log("before destroy tab:", TAB_TYPE);
-            },
-            destroy() {
-                console.log("destroy tab:", TAB_TYPE);
+                this.element.innerHTML = '<p>Hello</p>'
             }
         });
 
@@ -253,25 +236,6 @@ export default class PluginSample extends Plugin {
         console.log("onunload");
     }
 
-    /**
-     * A custom setting pannel provided by svelte
-     */
-    openDIYSetting(): void {
-        let dialog = new Dialog({
-            title: "SettingPannel",
-            content: `<div id="SettingPanel"></div>`,
-            width: "600px",
-            destroyCallback: (options) => {
-                console.log("destroyCallback", options);
-                //You'd better destroy the component when the dialog is closed
-                pannel.$destroy();
-            }
-        });
-        let pannel = new SettingPannel({
-            target: dialog.element.querySelector("#SettingPanel"),
-        });
-    }
-
     private eventBusLog({ detail }: any) {
         console.log(detail);
     }
@@ -289,19 +253,26 @@ export default class PluginSample extends Plugin {
     }
 
     private showDialog() {
-        let dialog = new Dialog({
-            title: "Hello World",
-            content: `<div id="helloPanel" class="b3-dialog__content"></div>`,
-            width: this.isMobile ? "92vw" : "720px",
-            destroyCallback(options) {
-                // hello.$destroy();
-            },
+        const dialog = new Dialog({
+            title: "Info",
+            content: `<div class="b3-dialog__content">
+    <div>API demo:</div>
+    <div class="fn__hr"></div>
+    <div class="plugin-sample__time">System current time: <span id="time"></span></div>
+    <div class="fn__hr"></div>
+    <div class="fn__hr"></div>
+    <div>Protyle demo:</div>
+    <div class="fn__hr"></div>
+    <div id="protyle" style="height: 360px;"></div>
+</div>`,
+            width: this.isMobile ? "92vw" : "560px",
+            height: "540px",
         });
-        new HelloExample({
-            target: dialog.element.querySelector("#helloPanel"),
-            props: {
-                app: this.app,
-            }
+        new Protyle(this.app, dialog.element.querySelector("#protyle"), {
+            blockId: "20200812220555-lj3enxa",
+        });
+        fetchPost("/api/system/currentTime", {}, (response) => {
+            dialog.element.querySelector("#time").innerHTML = new Date(response.data).toString();
         });
     }
 
@@ -662,13 +633,6 @@ export default class PluginSample extends Plugin {
             label: "Official Setting Dialog",
             click: () => {
                 this.openSetting();
-            }
-        });
-        menu.addItem({
-            icon: "iconSettings",
-            label: "A custom setting dialog (by svelte)",
-            click: () => {
-                this.openDIYSetting();
             }
         });
         menu.addItem({

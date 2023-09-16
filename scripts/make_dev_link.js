@@ -183,4 +183,3 @@ if (fs.existsSync(targetPath)) {
     fs.symlinkSync(devDir, targetPath, 'junction');
     log(`Done! Created symlink ${targetPath}`);
 }
-
