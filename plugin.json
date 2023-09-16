@@ -2,8 +2,8 @@
   "name": "plugin-sample-vite",
   "author": "frostime",
   "url": "https://github.com/frostime/plugin-sample-vite",
-  "version": "0.1.12",
-  "minAppVersion": "2.9.0",
+  "version": "0.2.3",
+  "minAppVersion": "2.10.3",
   "backends": ["all"],
   "frontends": ["all"],
   "displayName": {
