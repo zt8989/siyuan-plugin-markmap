@@ -4,7 +4,7 @@
 [English](./README.md)
 
 
-> 本例和 [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.2.3](https://github.com/siyuan-note/plugin-sample/tree/v0.2.3)
+> 本例和 [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.2.6](https://github.com/siyuan-note/plugin-sample/tree/v0.2.6)
 
 1. 使用 vite 打包
 2. 使用符号链接、而不是把项目放到插件目录下的模式进行开发
@@ -194,6 +194,8 @@ PR 社区集市仓库。
     ```
 
 ## 如何去掉 svelte 依赖
+
+> 无 Svelte 依赖版: https://github.com/frostime/plugin-sample-vite
 
 本插件使用 vite 打包，并提供了 svelte 框架依赖。不过实际情况下可能有些开发者并不想要 svelte，只希望使用 vite 打包。
 

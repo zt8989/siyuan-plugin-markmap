@@ -3,7 +3,7 @@
 
 [中文版](./README_zh_CN.md)
 
-> Consistent with [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.2.3](https://github.com/siyuan-note/plugin-sample/tree/v0.2.3)
+> Consistent with [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.2.6](https://github.com/siyuan-note/plugin-sample/tree/v0.2.6)
 
 
 
@@ -202,6 +202,8 @@ The github action is included in this sample, you can use it to publish your new
 
 
 ## How to remove svelte dependencies
+
+> Pure vite without svelte: https://github.com/frostime/plugin-sample-vite
 
 This plugin is packaged in vite and provides a dependency on the svelte framework. However, in practice some developers may not want to use svelte and only want to use the vite package.
 
