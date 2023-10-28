@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2023-09-16 18:05:00
  * @FilePath     : /src/libs/setting-utils.ts
- * @LastEditTime : 2023-09-16 18:17:03
+ * @LastEditTime : 2023-10-28 16:52:01
  * @Description  : A utility for siyuan plugin settings
  */
 
@@ -17,7 +17,7 @@ export class SettingUtils {
     settings: Map<string, ISettingItem> = new Map();
     elements: Map<string, HTMLElement> = new Map();
 
-    constructor(plugin: Plugin, name?: string, width?: string, height?: string) {
+    constructor(plugin: Plugin, name?: string, callback?: (data: any) => void, width?: string, height?: string) {
         this.name = name ?? 'settings';
         this.plugin = plugin;
         this.file = this.name.endsWith('.json') ? this.name : `${this.name}.json`;
@@ -29,21 +29,25 @@ export class SettingUtils {
                     this.updateValue(key);
                 }
                 let data = this.dump();
-                this.plugin.data[this.name] = data;
-                this.save();
+                if (callback !== undefined) {
+                    callback(data);
+                } else {
+                    this.plugin.data[this.name] = data;
+                    this.save();
+                }
             }
         });
     }
 
     async load() {
         let data = await this.plugin.loadData(this.file);
+        console.debug('Load config:', data);
         if (data) {
             for (let [key, item] of this.settings) {
                 item.value = data?.[key] ?? item.value;
             }
         }
         this.plugin.data[this.name] = this.dump();
-        console.log(data);
         return data;
     }
 
@@ -155,6 +159,7 @@ export class SettingUtils {
                 break;
             case 'slider':
                 element.value = item.value;
+                element.ariaLabel = item.value;
                 break;
             case 'textinput':
                 element.value = item.value;
@@ -169,7 +174,7 @@ export class SettingUtils {
     private updateValue(key: string) {
         let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
-        console.log(element, element?.value);
+        // console.debug(element, element?.value);
         switch (item.type) {
             case 'checkbox':
                 item.value = element.checked;
@@ -178,7 +183,7 @@ export class SettingUtils {
                 item.value = element.value;
                 break;
             case 'slider':
-                item.value = parseInt(element.value);
+                item.value = element.value;
                 break;
             case 'textinput':
                 item.value = element.value;
