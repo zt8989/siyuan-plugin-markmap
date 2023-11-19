@@ -9,9 +9,10 @@ import {
     getFrontend,
     getBackend,
     IModel,
-    Setting,
-    fetchPost,
-    Protyle, openWindow, IOperation
+    Protyle,
+    openWindow,
+    IOperation,
+    Constants
 } from "siyuan";
 import "@/index.scss";
 
@@ -124,6 +125,9 @@ export default class PluginSample extends Plugin {
                 text: "This is my custom dock"
             },
             type: DOCK_TYPE,
+            resize() {
+                console.log(DOCK_TYPE + " resize");
+            },
             init() {
                 this.element.innerHTML = `<div class="fn__flex-1 fn__flex-column">
     <div class="block__icons">
@@ -273,8 +277,13 @@ export default class PluginSample extends Plugin {
 
     private showDialog() {
         const dialog = new Dialog({
-            title: "Info",
+            title: `SiYuan ${Constants.SIYUAN_VERSION}`,
             content: `<div class="b3-dialog__content">
+    <div>appId:</div>
+    <div class="fn__hr"></div>
+    <div class="plugin-sample__time">${this.app?.appId}</div>
+    <div class="fn__hr"></div>
+    <div class="fn__hr"></div>
     <div>API demo:</div>
     <div class="fn__hr"></div>
     <div class="plugin-sample__time">System current time: <span id="time"></span></div>
@@ -499,6 +508,18 @@ export default class PluginSample extends Plugin {
                 label: "Off loaded-protyle-dynamic",
                 click: () => {
                     this.eventBus.off("loaded-protyle-dynamic", this.eventBusLog);
+                }
+            }, {
+                icon: "iconSelect",
+                label: "On switch-protyle",
+                click: () => {
+                    this.eventBus.on("switch-protyle", this.eventBusLog);
+                }
+            }, {
+                icon: "iconClose",
+                label: "Off switch-protyle",
+                click: () => {
+                    this.eventBus.off("switch-protyle", this.eventBusLog);
                 }
             }, {
                 icon: "iconSelect",
