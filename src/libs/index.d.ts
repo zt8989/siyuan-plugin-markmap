@@ -5,14 +5,13 @@ interface ISettingItem {
     type: TSettingItemType;
     title: string;
     description?: string;
+    placeholder?: string;
     slider?: {
         min: number;
         max: number;
         step: number;
     };
-    select?: {
-        options: {val: any; text: string}[];
-    };
+    options?: { [key: string | number]: string };
     button?: {
         label: string;
         callback: () => void;

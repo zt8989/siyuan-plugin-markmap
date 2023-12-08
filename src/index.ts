@@ -176,17 +176,9 @@ export default class PluginSample extends Plugin {
             type: "select",
             title: "Readonly text",
             description: "Select description",
-            select: {
-                options: [
-                    {
-                        val: 1,
-                        text: "Option 1"
-                    },
-                    {
-                        val: 2,
-                        text: "Option 2"
-                    }
-                ]
+            options: {
+                1: "Option 1",
+                2: "Option 2"
             }
         });
         this.settingUtils.addItem({
