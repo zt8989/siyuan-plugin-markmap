@@ -13,7 +13,8 @@ import {
     openWindow,
     IOperation,
     Constants,
-    openMobileFileById
+    openMobileFileById,
+    fetchPost
 } from "siyuan";
 import "@/index.scss";
 
