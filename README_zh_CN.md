@@ -8,11 +8,7 @@
 
 1. 使用 vite 打包
 2. 使用符号链接、而不是把项目放到插件目录下的模式进行开发
-3. 内置对 svelte 框架的支持
-  
-   > 如果不想要 svelte，请移步 [frostime/plugin-sample-vite](https://github.com/frostime/plugin-sample-vite)
-
-4. 提供一个github action 模板，能自动生成package.zip并上传到新版本中
+3. 提供一个github action 模板，能自动生成package.zip并上传到新版本中
 
 ## 开始
 
@@ -25,7 +21,7 @@
     - 运行 `pnpm run make-link`, 脚本会自动检测所有思源的工作空间, 请在命令行中手动输入序号以选择工作空间
         ```bash
         >>> pnpm run make-link
-        > plugin-sample-vite-svelte@0.0.3 make-link H:\SrcCode\开源项目\plugin-sample-vite-svelte
+        > plugin-sample-vite@0.0.3 make-link H:\SrcCode\开源项目\plugin-sample-vite
         > node  --no-warnings ./scripts/make_dev_link.js
 
         "targetDir" is empty, try to get SiYuan directory automatically....
@@ -34,17 +30,17 @@
         [1] H:\临时文件夹\SiYuanDevSpace
         Please select a workspace[0-1]: 0
         Got target directory: H:\Media\SiYuan/data/plugins
-        Done! Created symlink H:\Media\SiYuan/data/plugins/plugin-sample-vite-svelte
+        Done! Created symlink H:\Media\SiYuan/data/plugins/plugin-sample-vite
         ```
 4. **手动创建符号链接**
     - 打开 `./scripts/make_dev_link.js` 文件，更改 `targetDir` 为思源的插件目录 `<siyuan workspace>/data/plugins`
     - 运行 `pnpm run make-link` 命令, 如果看到类似以下的消息，说明创建成功:
       ```bash
       ❯❯❯ pnpm run make-link
-      > plugin-sample-vite-svelte@0.0.1 make-link H:\SrcCode\plugin-sample-vite-svelte
+      > plugin-sample-vite@0.0.1 make-link H:\SrcCode\plugin-sample-vite
       > node ./scripts/make_dev_link.js
 
-      Done! Created symlink H:/SiYuanDevSpace/data/plugins/plugin-sample-vite-svelte
+      Done! Created symlink H:/SiYuanDevSpace/data/plugins/plugin-sample-vite
       ```
 5. **设置环境变量创建符号链接**
     - 你也可以设置系统的环境变量 `SIYUAN_PLUGIN_DIR` 为 `/data/plugins` 的路径
@@ -72,9 +68,9 @@
 
 ```json
 {
-  "name": "plugin-sample-vite-svelte",
+  "name": "plugin-sample-vite",
   "author": "frostime",
-  "url": "https://github.com/siyuan-note/plugin-sample-vite-svelte",
+  "url": "https://github.com/frostime/plugin-sample-vite",
   "version": "0.1.3",
   "minAppVersion": "2.8.8",
   "backends": ["windows", "linux", "darwin"],
@@ -199,28 +195,3 @@ PR 社区集市仓库。
             token: ${{ secrets.GITHUB_TOKEN }}
             prerelease: true # 把这个改为 false
     ```
-
-## 如何去掉 svelte 依赖
-
-> 无 Svelte 依赖版: https://github.com/frostime/plugin-sample-vite
-
-本插件使用 vite 打包，并提供了 svelte 框架依赖。不过实际情况下可能有些开发者并不想要 svelte，只希望使用 vite 打包。
-
-实际上你可以完全不做任何修改，就可以在不使用 svelte 的前提下使用这个模板。与 svelte 编译的编译相关的部分是以插件的形式载入到 vite 的工作流中，所以即使你的项目里面没有 svelte，也不会有太大的影响。
-
-如果你执意希望删除掉所有 svelte 依赖以免它们污染你的工作空间，可以执行一下步骤:
-
-1. 删掉 package.json 中的
-    ```json
-    {
-      "@sveltejs/vite-plugin-svelte": "^2.0.3",
-      "@tsconfig/svelte": "^4.0.1",
-      "svelte": "^3.57.0"
-    }
-    ```
-2. 删掉 `svelte.config.js` 文件
-3. 删掉 `vite.config.js` 文件中的
-    - 第六行: `import { svelte } from "@sveltejs/vite-plugin-svelte"`
-    - 第二十行: `svelte(),`
-4. 删掉 `tsconfig.json` 中 37 行 `"svelte"`
-5. 重新执行 `pnpm i`
