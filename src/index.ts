@@ -182,6 +182,14 @@ export default class PluginSample extends Plugin {
             type: "textinput",
             title: "Readonly text",
             description: "Input description",
+            action: {
+                // Called when focus is lost and content changes
+                callback: () => {
+                    // Return data and save it in real time
+                    let value = this.settingUtils.takeAndSave("Input")
+                    console.log(value);
+                }
+            }
         });
         this.settingUtils.addItem({
             key: "InputArea",
@@ -189,6 +197,14 @@ export default class PluginSample extends Plugin {
             type: "textarea",
             title: "Readonly text",
             description: "Input description",
+            // Called when focus is lost and content changes
+            action: {
+                callback: () => {
+                    // Read data in real time
+                    let value = this.settingUtils.take("InputArea")
+                    console.log(value);
+                }
+            }
         });
         this.settingUtils.addItem({
             key: "Check",
@@ -196,16 +212,31 @@ export default class PluginSample extends Plugin {
             type: "checkbox",
             title: "Checkbox text",
             description: "Check description",
+            action: {
+                callback: () => {
+                    // Return data and save it in real time
+                    let value = !this.settingUtils.get("Check")
+                     this.settingUtils.set("Check", value)
+                    console.log(value);
+                }
+            }
         });
         this.settingUtils.addItem({
             key: "Select",
             value: 1,
             type: "select",
-            title: "Readonly text",
+            title: "Select",
             description: "Select description",
             options: {
                 1: "Option 1",
                 2: "Option 2"
+            },
+            action: {
+                callback: () => {
+                    // Read data in real time
+                    let value = this.settingUtils.take("Select")
+                    console.log(value);
+                }
             }
         });
         this.settingUtils.addItem({
@@ -218,6 +249,15 @@ export default class PluginSample extends Plugin {
                 min: 0,
                 max: 100,
                 step: 1,
+            },
+            action:{
+                // The callback is called after the action of Silder changes, 
+                // so it should be the this.settingUtils.get() method.
+                callback: () => {
+                    // Read data in real time
+                    let value = this.settingUtils.get("Slider")
+                    console.log(value);
+                }
             }
         });
         this.settingUtils.addItem({
@@ -299,7 +339,6 @@ export default class PluginSample extends Plugin {
 
     async onunload() {
         console.log(this.i18n.byePlugin);
-        await this.settingUtils.save();
         showMessage("Goodbye SiYuan Plugin");
         console.log("onunload");
     }
