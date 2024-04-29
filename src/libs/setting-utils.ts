@@ -3,11 +3,53 @@
  * @Author       : frostime
  * @Date         : 2023-12-17 18:28:19
  * @FilePath     : /src/libs/setting-utils.ts
- * @LastEditTime : 2024-01-15 20:45:16
+ * @LastEditTime : 2024-04-29 22:40:25
  * @Description  : 
  */
 
 import { Plugin, Setting } from 'siyuan';
+
+const valueOf = (ele: HTMLElement, parseNumber: Function=parseInt) => {
+    let val: any = null;
+    if (ele instanceof HTMLInputElement) {
+        if (ele.type === 'checkbox') {
+            val = ele.checked;
+        } else {
+            if (ele.type === 'number') {
+                val = parseNumber(ele.value);
+            } else {
+                val = ele.value;
+            }
+        }
+    } else if (ele instanceof HTMLSelectElement) {
+        val = ele.value;
+    } else if (ele instanceof HTMLTextAreaElement) {
+        val = ele.value;
+    } else {
+        val = ele?.textContent;
+    }
+    return val;
+}
+
+const setValue = (ele: HTMLElement, value: any) => {
+    if (ele === null || ele === undefined) return;
+    if (ele instanceof HTMLInputElement) {
+        if (ele.type === 'checkbox') {
+            ele.checked = value;
+        } else {
+            ele.value = value;
+        }
+        if (ele.type === 'range') {
+            ele.ariaLabel = value;
+        }
+    } else if (ele instanceof HTMLSelectElement) {
+        ele.value = value;
+    } else if (ele instanceof HTMLTextAreaElement) {
+        ele.value = value;
+    } else {
+        ele.textContent = value;
+    }
+}
 
 export class SettingUtils {
     plugin: Plugin;
@@ -17,27 +59,32 @@ export class SettingUtils {
     settings: Map<string, ISettingItem> = new Map();
     elements: Map<string, HTMLElement> = new Map();
 
-    constructor(plugin: Plugin, name?: string, callback?: (data: any) => void, width?: string, height?: string) {
-        this.name = name ?? 'settings';
-        this.plugin = plugin;
+    constructor(args: {
+        plugin: Plugin,
+        name?: string,
+        callback?: (data: any) => void,
+        width?: string,
+        height?: string
+    }) {
+        this.name = args.name ?? 'settings';
+        this.plugin = args.plugin;
         this.file = this.name.endsWith('.json') ? this.name : `${this.name}.json`;
         this.plugin.setting = new Setting({
-            width: width,
-            height: height,
+            width: args.width,
+            height: args.height,
             confirmCallback: () => {
                 for (let key of this.settings.keys()) {
                     this.updateValueFromElement(key);
                 }
                 let data = this.dump();
-                if (callback !== undefined) {
-                    callback(data);
-                } else {
-                    this.plugin.data[this.name] = data;
-                    this.save();
+                if (args.callback !== undefined) {
+                    args.callback(data);
                 }
+                this.plugin.data[this.name] = data;
+                this.save();
             },
             destroyCallback: () => {
-                //从值恢复元素
+                //Restore the original value
                 for (let key of this.settings.keys()) {
                     this.updateElementFromValue(key);
                 }
@@ -74,21 +121,6 @@ export class SettingUtils {
     }
 
     /**
-      * Read in real time, 
-      * do not read from the configuration file
-      * @param key key name
-      * @returns value in html 
-      */
-    take(key: string) {
-        let item = this.getElement(key)
-        this.settings.set(key, item)
-        if (item.type === 'button') {
-            return item.value
-        }
-        return item.value
-    }
-
-    /**
      * Set data to this.settings, 
      * but do not save it to the configuration file
      * @param key key name
@@ -113,20 +145,38 @@ export class SettingUtils {
         if (item) {
             item.value = value;
             this.updateElementFromValue(key);
-            await this.save()
+            await this.save();
         }
+    }
+
+    /**
+      * Read in the value of element instead of setting obj in real time
+      * @param key key name
+      * @param apply whether to apply the value to the setting object
+      *        if true, the value will be applied to the setting object
+      * @returns value in html
+      */
+    take(key: string, apply: boolean = false) {
+        let element = this.elements.get(key) as any;
+        if (!element){
+            return
+        }
+        if (apply) {
+            this.updateValueFromElement(key);
+        }
+        return valueOf(element)
     }
 
     /**
      * Read data from html and save it
      * @param key key name
      * @param value value
-     * @return value in html 
+     * @return value in html
      */
     async takeAndSave(key: string) {
-        let value = this.take(key)
-        await this.save()
-        return value
+        let value = this.take(key, true);
+        await this.save();
+        return value;
     }
 
     /**
@@ -157,8 +207,6 @@ export class SettingUtils {
      */
     dump(): Object {
         let data: any = {};
-
-
         for (let [key, item] of this.settings) {
             if (item.type === 'button') continue;
             data[key] = item.value;
@@ -168,6 +216,33 @@ export class SettingUtils {
 
     addItem(item: ISettingItem) {
         this.settings.set(item.key, item);
+        if (item.createElement === undefined) {
+            let itemElement = this.createDefaultElement(item);
+            this.elements.set(item.key, itemElement);
+            this.plugin.setting.addItem({
+                title: item.title,
+                description: item?.description,
+                createActionElement: () => {
+                    this.updateElementFromValue(item.key);
+                    let element = this.getElement(item.key);
+                    return element;
+                }
+            });
+        } else {
+            this.plugin.setting.addItem({
+                title: item.title,
+                description: item?.description,
+                createActionElement: () => {
+                    let val = this.get(item.key);
+                    let element = item.createElement(val);
+                    this.elements.set(item.key, element);
+                    return element;
+                }
+            });
+        }
+    }
+
+    createDefaultElement(item: ISettingItem) {
         let itemElement: HTMLElement;
         switch (item.type) {
             case 'checkbox':
@@ -243,91 +318,29 @@ export class SettingUtils {
                 itemElement = hintElement;
                 break;
         }
-        this.elements.set(item.key, itemElement);
-        this.plugin.setting.addItem({
-            title: item.title,
-            description: item?.description,
-            createActionElement: () => {
-                let element = this.getElement(item.key);
-                return element;
-            }
-        })
+        return itemElement;
     }
 
     /**
-     * Set the value in the setting to the value of the element 
-     * and return the element information
+     * return the setting element
      * @param key key name
      * @returns element
      */
     getElement(key: string) {
-        let item = this.settings.get(key);
+        // let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
-        switch (item.type) {
-            case 'checkbox':
-                element.value = element.checked ? true : false;
-                element.checked = item.value;
-                break;
-            case 'select':
-                element.value = item.value;
-                break;
-            case 'slider':
-                element.value = item.value;
-                element.ariaLabel = item.value;
-                break;
-            case 'textinput':
-                element.value = item.value;
-                break;
-            case 'textarea':
-                element.value = item.value;
-                break;
-        }
         return element;
     }
 
     private updateValueFromElement(key: string) {
         let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
-        // console.debug(element, element?.value);
-        switch (item.type) {
-            case 'checkbox':
-                item.value = element.checked;
-                break;
-            case 'select':
-                item.value = element.value;
-                break;
-            case 'slider':
-                item.value = element.value;
-                break;
-            case 'textinput':
-                item.value = element.value;
-                break;
-            case 'textarea':
-                item.value = element.value;
-                break;
-        }
+        item.value = valueOf(element);
     }
 
     private updateElementFromValue(key: string) {
         let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
-        switch (item.type) {
-            case 'checkbox':
-                element.checked = item.value;
-                break;
-            case 'select':
-                element.value = item.value;
-                break;
-            case 'slider':
-                element.value = item.value;
-                break;
-            case 'textinput':
-                element.value = item.value;
-                break;
-            case 'textarea':
-                element.value = item.value;
-                break;
-        }
+        setValue(element, item.value);
     }
-
 }

@@ -168,14 +168,9 @@ export default class PluginSample extends Plugin {
             }
         });
 
-        this.settingUtils = new SettingUtils(this, STORAGE_NAME);
-
-        try {
-            this.settingUtils.load();
-        } catch (error) {
-            console.error("Error loading settings storage, probably empty config json:", error);
-        }
-
+        this.settingUtils = new SettingUtils({
+            plugin: this, name: STORAGE_NAME
+        });
         this.settingUtils.addItem({
             key: "Input",
             value: "",
@@ -201,7 +196,7 @@ export default class PluginSample extends Plugin {
             action: {
                 callback: () => {
                     // Read data in real time
-                    let value = this.settingUtils.take("InputArea")
+                    let value = this.settingUtils.get("InputArea")
                     console.log(value);
                 }
             }
@@ -234,7 +229,7 @@ export default class PluginSample extends Plugin {
             action: {
                 callback: () => {
                     // Read data in real time
-                    let value = this.settingUtils.take("Select")
+                    let value = this.settingUtils.get("Select")
                     console.log(value);
                 }
             }
@@ -251,11 +246,9 @@ export default class PluginSample extends Plugin {
                 step: 1,
             },
             action:{
-                // The callback is called after the action of Silder changes, 
-                // so it should be the this.settingUtils.get() method.
                 callback: () => {
                     // Read data in real time
-                    let value = this.settingUtils.get("Slider")
+                    let value = this.settingUtils.take("Slider")
                     console.log(value);
                 }
             }
@@ -280,6 +273,13 @@ export default class PluginSample extends Plugin {
             title: this.i18n.hintTitle,
             description: this.i18n.hintDesc,
         });
+
+        try {
+            this.settingUtils.load();
+        } catch (error) {
+            console.error("Error loading settings storage, probably empty config json:", error);
+        }
+
 
         this.protyleSlash = [{
             filter: ["insert emoji 😊", "插入表情 😊", "crbqwx"],
