@@ -3,60 +3,84 @@
  * @Author       : frostime
  * @Date         : 2023-12-17 18:28:19
  * @FilePath     : /src/libs/setting-utils.ts
- * @LastEditTime : 2024-04-29 22:40:25
+ * @LastEditTime : 2024-04-30 17:40:02
  * @Description  : 
  */
 
 import { Plugin, Setting } from 'siyuan';
 
-const valueOf = (ele: HTMLElement, parseNumber: Function=parseInt) => {
-    let val: any = null;
-    if (ele instanceof HTMLInputElement) {
-        if (ele.type === 'checkbox') {
-            val = ele.checked;
-        } else {
-            if (ele.type === 'number') {
-                val = parseNumber(ele.value);
-            } else {
-                val = ele.value;
+
+/**
+ * The default function to get the value of the element
+ * @param type 
+ * @returns 
+ */
+const createDefaultGetter = (type: TSettingItemType) => {
+    let getter: (ele: HTMLElement) => any;
+    switch (type) {
+        case 'checkbox':
+            getter = (ele: HTMLInputElement) => {
+                return ele.checked;
+            };
+            break;
+        case 'select':
+        case 'slider':
+        case 'textinput':
+        case 'textarea':
+            getter = (ele: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) => {
+                return ele.value;
+            };
+            break;
+        case 'number':
+            getter = (ele: HTMLInputElement) => {
+                return parseInt(ele.value);
             }
-        }
-    } else if (ele instanceof HTMLSelectElement) {
-        val = ele.value;
-    } else if (ele instanceof HTMLTextAreaElement) {
-        val = ele.value;
-    } else {
-        val = ele?.textContent;
+            break;
+        default:
+            getter = () => null;
+            break;
     }
-    return val;
+    return getter;
 }
 
-const setValue = (ele: HTMLElement, value: any) => {
-    if (ele === null || ele === undefined) return;
-    if (ele instanceof HTMLInputElement) {
-        if (ele.type === 'checkbox') {
-            ele.checked = value;
-        } else {
-            ele.value = value;
-        }
-        if (ele.type === 'range') {
-            ele.ariaLabel = value;
-        }
-    } else if (ele instanceof HTMLSelectElement) {
-        ele.value = value;
-    } else if (ele instanceof HTMLTextAreaElement) {
-        ele.value = value;
-    } else {
-        ele.textContent = value;
+
+/**
+ * The default function to set the value of the element
+ * @param type 
+ * @returns 
+ */
+const createDefaultSetter = (type: TSettingItemType) => {
+    let setter: (ele: HTMLElement, value: any) => void;
+    switch (type) {
+        case 'checkbox':
+            setter = (ele: HTMLInputElement, value: any) => {
+                ele.checked = value;
+            };
+            break;
+        case 'select':
+        case 'slider':
+        case 'textinput':
+        case 'textarea':
+        case 'number':
+            setter = (ele: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: any) => {
+                ele.value = value;
+            };
+            break;
+        default:
+            setter = () => {};
+            break;
     }
+    return setter;
+
 }
+
 
 export class SettingUtils {
     plugin: Plugin;
     name: string;
     file: string;
 
-    settings: Map<string, ISettingItem> = new Map();
+    settings: Map<string, ISettingUtilsItem> = new Map();
     elements: Map<string, HTMLElement> = new Map();
 
     constructor(args: {
@@ -157,14 +181,15 @@ export class SettingUtils {
       * @returns value in html
       */
     take(key: string, apply: boolean = false) {
+        let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
-        if (!element){
+        if (!element) {
             return
         }
         if (apply) {
             this.updateValueFromElement(key);
         }
-        return valueOf(element)
+        return item.getEleVal(element);
     }
 
     /**
@@ -214,14 +239,29 @@ export class SettingUtils {
         return data;
     }
 
-    addItem(item: ISettingItem) {
+    addItem(item: ISettingUtilsItem) {
         this.settings.set(item.key, item);
+        const IsCustom = item.type === 'custom';
+        let error = IsCustom && (item.createElement === undefined || item.getEleVal === undefined || item.setEleVal === undefined);
+        if (error) {
+            console.error('The custom setting item must have createElement, getEleVal and setEleVal methods');
+            return;
+        }
+
+        if (item.getEleVal === undefined) {
+            item.getEleVal = createDefaultGetter(item.type);
+        }
+        if (item.setEleVal === undefined) {
+            item.setEleVal = createDefaultSetter(item.type);
+        }
+
         if (item.createElement === undefined) {
             let itemElement = this.createDefaultElement(item);
             this.elements.set(item.key, itemElement);
             this.plugin.setting.addItem({
                 title: item.title,
                 description: item?.description,
+                direction: item?.direction,
                 createActionElement: () => {
                     this.updateElementFromValue(item.key);
                     let element = this.getElement(item.key);
@@ -232,6 +272,7 @@ export class SettingUtils {
             this.plugin.setting.addItem({
                 title: item.title,
                 description: item?.description,
+                direction: item?.direction,
                 createActionElement: () => {
                     let val = this.get(item.key);
                     let element = item.createElement(val);
@@ -242,7 +283,7 @@ export class SettingUtils {
         }
     }
 
-    createDefaultElement(item: ISettingItem) {
+    createDefaultElement(item: ISettingUtilsItem) {
         let itemElement: HTMLElement;
         switch (item.type) {
             case 'checkbox':
@@ -334,13 +375,15 @@ export class SettingUtils {
 
     private updateValueFromElement(key: string) {
         let item = this.settings.get(key);
+        if (item.type === 'button') return;
         let element = this.elements.get(key) as any;
-        item.value = valueOf(element);
+        item.value = item.getEleVal(element);
     }
 
     private updateElementFromValue(key: string) {
         let item = this.settings.get(key);
+        if (item.type === 'button') return;
         let element = this.elements.get(key) as any;
-        setValue(element, item.value);
+        item.setEleVal(element, item.value);
     }
 }

@@ -29,7 +29,7 @@ const DOCK_TYPE = "dock_tab";
 
 export default class PluginSample extends Plugin {
 
-    private customTab: () => IModel;
+    customTab: () => IModel;
     private isMobile: boolean;
     private blockIconEventBindThis = this.blockIconEvent.bind(this);
     private settingUtils: SettingUtils;
@@ -181,7 +181,7 @@ export default class PluginSample extends Plugin {
                 // Called when focus is lost and content changes
                 callback: () => {
                     // Return data and save it in real time
-                    let value = this.settingUtils.takeAndSave("Input")
+                    let value = this.settingUtils.takeAndSave("Input");
                     console.log(value);
                 }
             }
@@ -196,7 +196,7 @@ export default class PluginSample extends Plugin {
             action: {
                 callback: () => {
                     // Read data in real time
-                    let value = this.settingUtils.get("InputArea")
+                    let value = this.settingUtils.get("InputArea");
                     console.log(value);
                 }
             }
@@ -210,8 +210,8 @@ export default class PluginSample extends Plugin {
             action: {
                 callback: () => {
                     // Return data and save it in real time
-                    let value = !this.settingUtils.get("Check")
-                     this.settingUtils.set("Check", value)
+                    let value = !this.settingUtils.get("Check");
+                    this.settingUtils.set("Check", value);
                     console.log(value);
                 }
             }
@@ -229,7 +229,7 @@ export default class PluginSample extends Plugin {
             action: {
                 callback: () => {
                     // Read data in real time
-                    let value = this.settingUtils.get("Select")
+                    let value = this.settingUtils.get("Select");
                     console.log(value);
                 }
             }
@@ -240,6 +240,7 @@ export default class PluginSample extends Plugin {
             type: "slider",
             title: "Slider text",
             description: "Slider description",
+            direction: "column",
             slider: {
                 min: 0,
                 max: 100,
@@ -248,7 +249,7 @@ export default class PluginSample extends Plugin {
             action:{
                 callback: () => {
                     // Read data in real time
-                    let value = this.settingUtils.take("Slider")
+                    let value = this.settingUtils.take("Slider");
                     console.log(value);
                 }
             }
@@ -264,6 +265,28 @@ export default class PluginSample extends Plugin {
                 callback: () => {
                     showMessage("Button clicked");
                 }
+            }
+        });
+        this.settingUtils.addItem({
+            key: "Custom Element",
+            value: "",
+            type: "custom",
+            direction: "row",
+            title: "Custom Element",
+            description: "Custom Element description",
+            //Any custom element must offer the following methods
+            createElement: (currentVal: any) => {
+                let div = document.createElement('div');
+                div.style.border = "1px solid var(--b3-theme-primary)";
+                div.contentEditable = "true";
+                div.textContent = currentVal;
+                return div;
+            },
+            getEleVal: (ele: HTMLElement) => {
+                return ele.textContent;
+            },
+            setEleVal: (ele: HTMLElement, val: any) => {
+                ele.textContent = val;
             }
         });
         this.settingUtils.addItem({
