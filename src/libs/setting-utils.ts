@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2023-12-17 18:28:19
  * @FilePath     : /src/libs/setting-utils.ts
- * @LastEditTime : 2024-04-30 17:40:02
+ * @LastEditTime : 2024-05-21 16:57:53
  * @Description  : 
  */
 
@@ -105,7 +105,7 @@ export class SettingUtils {
                     args.callback(data);
                 }
                 this.plugin.data[this.name] = data;
-                this.save();
+                this.save(data);
             },
             destroyCallback: () => {
                 //Restore the original value
@@ -128,8 +128,8 @@ export class SettingUtils {
         return data;
     }
 
-    async save() {
-        let data = this.dump();
+    async save(data?: any) {
+        data = data ?? this.dump();
         await this.plugin.saveData(this.file, this.dump());
         console.debug('Save config:', data);
         return data;
@@ -285,6 +285,13 @@ export class SettingUtils {
 
     createDefaultElement(item: ISettingUtilsItem) {
         let itemElement: HTMLElement;
+        //阻止思源内置的回车键确认
+        const preventEnterConfirm = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        }
         switch (item.type) {
             case 'checkbox':
                 let element: HTMLInputElement = document.createElement('input');
@@ -330,7 +337,7 @@ export class SettingUtils {
                 textInputElement.value = item.value;
                 textInputElement.onchange = item.action?.callback ?? (() => { });
                 itemElement = textInputElement;
-
+                textInputElement.addEventListener('keydown', preventEnterConfirm);
                 break;
             case 'textarea':
                 let textareaElement: HTMLTextAreaElement = document.createElement('textarea');
@@ -345,6 +352,7 @@ export class SettingUtils {
                 numberElement.className = 'b3-text-field fn__flex-center fn__size200';
                 numberElement.value = item.value;
                 itemElement = numberElement;
+                numberElement.addEventListener('keydown', preventEnterConfirm);
                 break;
             case 'button':
                 let buttonElement: HTMLButtonElement = document.createElement('button');
