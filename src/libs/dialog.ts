@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-03-23 21:37:33
  * @FilePath     : /src/libs/dialog.ts
- * @LastEditTime : 2024-06-01 16:28:30
+ * @LastEditTime : 2024-08-01 14:58:02
  * @Description  : Kits about dialogs
  */
 import { Dialog } from "siyuan";
@@ -119,3 +119,20 @@ export const confirmDialogSync = async (args: IConfirmDialogArgs) => {
         confirmDialog(newargs);
     });
 };
+
+
+export const simpleDialog = (args: {
+    title: string, ele: HTMLElement | DocumentFragment,
+    width?: string, height?: string,
+    callback?: () => void;
+}) => {
+    const dialog = new Dialog({
+        title: args.title,
+        content: `<div class="dialog-content" style="display: flex; height: 100%;"/>`,
+        width: args.width,
+        height: args.height,
+        destroyCallback: args.callback
+    });
+    dialog.element.querySelector(".dialog-content").appendChild(args.ele);
+    return dialog;
+}
