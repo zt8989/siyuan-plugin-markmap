@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-03-23 21:37:33
  * @FilePath     : /src/libs/dialog.ts
- * @LastEditTime : 2024-08-01 14:58:02
+ * @LastEditTime : 2024-10-16 14:48:42
  * @Description  : Kits about dialogs
  */
 import { Dialog } from "siyuan";
@@ -134,5 +134,8 @@ export const simpleDialog = (args: {
         destroyCallback: args.callback
     });
     dialog.element.querySelector(".dialog-content").appendChild(args.ele);
-    return dialog;
+    return {
+        dialog,
+        close: dialog.destroy.bind(dialog)
+    };
 }
