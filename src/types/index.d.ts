@@ -101,6 +101,77 @@ interface Window {
         ws: any;
         languages: any;
         emojis: any;
+        layout?: {
+            layout?: Layout,
+            centerLayout?: Layout,
+        }
     };
     Lute: any;
+}
+
+interface Wnd {
+    private app: App;
+    public id: string;
+    public parent?: Layout;
+    public element: HTMLElement;
+    public headersElement: HTMLElement;
+    public children: Tab[] = [];
+    // public resize?: Config.TUILayoutDirection;
+
+    public showHeading();
+    public split(direction: string): Wnd;
+    public addTab(tab: Tab);
+}
+
+interface Tab {
+    public parent: Wnd;
+    public id: string;
+    public headElement: HTMLElement;
+    public panelElement: HTMLElement;
+    public callback: (tab: Tab) => void;
+    public model: Model;
+    public title: string;
+    public icon: string;
+    public docIcon: string;
+}
+
+interface Layout {
+    public element: HTMLElement;
+    public children?: Array<Layout | Wnd>;
+    public parent?: Layout;
+    public direction: string;
+    // public direction: Config.TUILayoutDirection;
+    // public type?: Config.TUILayoutType;
+    public id?: string;
+    // public resize?: Config.TUILayoutDirection;
+    public size?: string;
+}
+
+interface IOpenFileOptions {
+    // app: import("../index").App,
+    // searchData?: Config.IUILayoutTabSearchConfig, // 搜索必填
+    // // card 和自定义页签 必填
+    // custom?: {
+    //     title: string,
+    //     icon: string,
+    //     data?: any
+    //     id: string,
+    //     fn?: (options: {
+    //         tab: import("../layout/Tab").Tab,
+    //         data: any,
+    //     }) => import("../layout/Model").Model,   // plugin 0.8.3 历史兼容
+    // }
+    // assetPath?: string, // asset 必填
+    // fileName?: string, // file 必填
+    // rootIcon?: string, // 文档图标
+    // id?: string,  // file 必填
+    // rootID?: string, // file 必填
+    position?: string, // file 或者 asset，打开位置
+    // page?: number | string, // asset
+    // mode?: TEditorMode // file
+    // action?: TProtyleAction[]
+    // keepCursor?: boolean // file，是否跳转到新 tab 上
+    // zoomIn?: boolean // 是否缩放
+    // removeCurrentTab?: boolean // 在当前页签打开时需移除原有页签
+    // afterOpen?: (model?: import("../layout/Model").Model) => void // 打开后回调
 }

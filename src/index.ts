@@ -19,24 +19,40 @@ import {
     ICardData,
     fetchPost
 } from "siyuan";
+import { filter, from, fromEventPattern, map, merge, mergeMap, Observable, of } from "rxjs"
 import "@/index.scss";
+
+import { Markmap } from 'markmap-view';
+import { transformer } from './markmap';
 
 
 import { SettingUtils } from "./libs/setting-utils";
+import { exportMdContent } from "./api";
+import { getActiveTab } from "./tab/util";
 const STORAGE_NAME = "menu-config";
 const TAB_TYPE = "custom_tab";
 const DOCK_TYPE = "dock_tab";
 
-export default class PluginSample extends Plugin {
+type WsMain = {
+    cmd: string;
+    data: {
+        rootID: string
+    }
+}
+
+export default class MarkmapPlugin extends Plugin {
 
     customTab: () => IModel;
     private isMobile: boolean;
     private blockIconEventBindThis = this.blockIconEvent.bind(this);
     private settingUtils: SettingUtils;
+    transorm: Transformer;
+    eventPipe: Observable<CustomEvent<WsMain>>;
 
     async onload() {
-        this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
+        this.eventPipe = fromEventPattern(handler => this.eventBus.on("ws-main", handler), handler => this.eventBus.off("ws-main", handler))
 
+        this.eventPipe.subscribe(x => console.log(x))
         console.log("loading plugin-sample", this.i18n);
 
         const frontEnd = getFrontend();
@@ -88,10 +104,30 @@ export default class PluginSample extends Plugin {
             element: statusIconTemp.content.firstElementChild as HTMLElement,
         });
 
+        const that = this
         this.customTab = this.addTab({
             type: TAB_TYPE,
             init() {
-                this.element.innerHTML = '<p>Hello</p>'
+                const init = of(this.data.rootID)
+                const saveDoc = that.eventPipe.pipe(
+                    filter(it => it.detail.cmd === "savedoc"),
+                    filter(it => it.detail.data.rootID == this.data.rootID),
+                    map(it => it.detail.data.rootID)
+                )
+                merge(init, saveDoc).pipe(
+                    mergeMap(it => from(exportMdContent(it)))
+                ).subscribe(res => {
+                    update(res.content)
+                })
+                this.element.innerHTML = `<div class="plugin-markmap-container"><svg class="plugin-markmap-content"/></div>`
+                const mm = Markmap.create(this.element.firstElementChild.firstElementChild as SVGElement);
+
+                const update = (data) => {
+                    const { root } = transformer.transform(data);
+                    mm.setData(root);
+                    mm.fit();
+                };
+
             }
         });
 
@@ -464,16 +500,19 @@ export default class PluginSample extends Plugin {
                 icon: "iconFace",
                 label: "Open Custom Tab",
                 click: () => {
+                    const activeTab = getActiveTab()
+                    console.log(activeTab)
                     const tab = openTab({
                         app: this.app,
                         custom: {
                             icon: "iconFace",
                             title: "Custom Tab",
                             data: {
-                                text: "This is my custom tab",
+                                rootID: activeTab.model.editor.protyle.block.rootID,
                             },
                             id: this.name + TAB_TYPE
                         },
+                        position: "right"
                     });
                     console.log(tab);
                 }
