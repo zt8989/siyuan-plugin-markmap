@@ -1,8 +1,8 @@
 {
-  "name": "plugin-sample-vite",
-  "author": "frostime",
-  "url": "https://github.com/frostime/plugin-sample-vite",
-  "version": "0.3.6",
+  "name": "siyuan-plugin-markmap",
+  "author": "cowboy",
+  "url": "https://github.com/zt8989/siyuan-plugin-markmap",
+  "version": "0.1.0",
   "minAppVersion": "3.0.12",
   "backends": [
     "windows",
@@ -20,12 +20,12 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Plugin sample with vite",
-    "zh_CN": "插件样例 vite 版"
+    "en_US": "siyuan markmap plugin",
+    "zh_CN": "思源markmap插件"
   },
   "description": {
-    "en_US": "SiYuan plugin sample with vite",
-    "zh_CN": "使用 vite 开发的思源插件样例"
+    "en_US": "siyuan mindmap plugin, based on markmap",
+    "zh_CN": "思源脑图插件，基于markmap"
   },
   "readme": {
     "en_US": "README.md",
@@ -38,7 +38,6 @@
   },
   "keywords": [
     "plugin",
-    "sample",
-    "插件样例"
+    "markmap"
   ]
 }

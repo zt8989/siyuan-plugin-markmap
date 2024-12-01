@@ -1,11 +1,11 @@
 {
-  "name": "plugin-sample-vite",
-  "version": "0.3.6",
+  "name": "siyuan-plugin-markmap",
+  "version": "0.1.0",
   "type": "module",
-  "description": "This is a sample plugin based on vite and svelte for Siyuan (https://b3log.org/siyuan)",
-  "repository": "https://github.com/frostime/plugin-sample-vite",
+  "description": "siyuan mindmap plugin, based on markmap",
+  "repository": "https://github.com/zt8989/siyuan-plugin-markmap",
   "homepage": "",
-  "author": "frostime",
+  "author": "cowboy",
   "license": "MIT",
   "scripts": {
     "dev": "cross-env NODE_ENV=development VITE_SOURCEMAP=inline vite build --watch",
@@ -30,5 +30,13 @@
     "vite": "^5.2.9",
     "vite-plugin-static-copy": "^1.0.2",
     "vite-plugin-zip-pack": "^1.0.5"
+  },
+  "dependencies": {
+    "d3": "^7.9.0",
+    "markmap-common": "^0.17.0",
+    "markmap-lib": "^0.17.0",
+    "markmap-toolbar": "^0.17.0",
+    "markmap-view": "^0.17.0",
+    "rxjs": "^7.8.1"
   }
 }
